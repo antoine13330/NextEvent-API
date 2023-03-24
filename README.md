@@ -27,11 +27,14 @@ L'API de NextEvent est accessible via l'URL suivante : `http://next-event/api/ne
 - [GET] `/api/:type/events` : Récupérer la liste des événements par type
 - [GET] `/api/:type/events/:date` : Récupérer la liste des événements par type & date
 - [GET] `/api/events/:id` : Récupérer les informations sur un événement spécifique
+- [PUT] `/api/events/:id` : Modifier les informations sur un événement spécifique 🔐
+- [DELETE] `/api/events/:id` : Supprimer un événement spécifique 🔐
 
 #### Utilisateur
 
-- [PUT] `/api/user/profil` : Modifier les informations de profil d'un utilisateur
+- [PUT] `/api/user/profil` : Modifier les informations de profil d'un utilisateur 
 - [GET] `/api/user/profil` : Récupérer les informations de profil d'un utilisateur
+- [DELETE] `/api/user` : Supprimer un utilisateur 🔐
 
 #### Favoris
 
