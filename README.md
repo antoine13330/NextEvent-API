@@ -18,7 +18,7 @@ NextEvent est une application pour référencer des événements de jeux vidéo 
 
 ## API
 
-L'API de NextEvent est accessible via l'URL suivante : `http://exemple.com/api/nextevent/`.
+L'API de NextEvent est accessible via l'URL suivante : `http://next-event/api/nextevent/`.
 
 ### Endpoints
 
