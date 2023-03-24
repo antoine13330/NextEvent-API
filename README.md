@@ -32,7 +32,7 @@ L'API de NextEvent est accessible via l'URL suivante : `http://exemple.com/api/n
 
 ### Authentification
 
-L'authentification est requise pour accéder aux endpoints `/profil` `/favorites`, `/favorites/add/:id` et `/favorites/remove/:id`.
+L'authentification est requise pour accéder aux endpoints `/profil`, `/favorites`, `/favorites/add/:id` et `/favorites/remove/:id`.
 
 ## Technologies utilisées
 
