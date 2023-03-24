@@ -45,7 +45,7 @@ L'API de NextEvent est accessible via l'URL suivante : `http://next-event/api/ne
 ### Authentification
 
 L'authentification est requise pour accéder aux endpoints `/profil`, `/favorites`, `/favorites/add/:id` et `/favorites/remove/:id`.
-
+De plus tous les endpoints avec un 🔐 sont accessibles seulement aux utilisateurs avec `ROLE_ADMIN`.
 ## Technologies utilisées
 
 - Symfony
