@@ -24,8 +24,8 @@ L'API de NextEvent est accessible via l'URL suivante : `http://next-event/api/ne
 
 #### Evenements
 
-- [GET] `/api/events` : Récupérer la liste des événements
-- [GET] `/api/events/:date` : Récupérer la liste des événements
+- [GET] `/api/:type/events` : Récupérer la liste des événements par type
+- [GET] `/api/:type/events/:date` : Récupérer la liste des événements par type & date
 - [GET] `/api/events/:id` : Récupérer les informations sur un événement spécifique
 
 #### Utilisateur
