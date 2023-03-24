@@ -30,6 +30,10 @@ L'API de NextEvent est accessible via l'URL suivante : `http://next-event/api/ne
 - [PUT] `/api/events/:id` : Modifier les informations sur un événement spécifique 🔐
 - [DELETE] `/api/events/:id` : Supprimer un événement spécifique 🔐
 
+#### Auth 
+- [POST] `api/auth/sign-up` : S'enregistrer
+- [POST] `api/auth/token` : Se connecter et récupérer le token
+- [POST] `api/auth/token_renew` : Mettre à jour le token expiré
 #### Utilisateur
 
 - [PUT] `/api/user/profil` : Modifier les informations de profil d'un utilisateur 
