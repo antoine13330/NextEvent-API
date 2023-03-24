@@ -22,10 +22,19 @@ L'API de NextEvent est accessible via l'URL suivante : `http://exemple.com/api/n
 
 ### Endpoints
 
+#### Evenements
+
 - [GET] `/api/events` : Récupérer la liste des événements
 - [GET] `/api/events/:date` : Récupérer la liste des événements
 - [GET] `/api/events/:id` : Récupérer les informations sur un événement spécifique
-- [GET] `/api/profil` : Récupérer les informations de profil d'un utilisateur
+
+#### Utilisateur
+
+- [PUT] `/api/user/profil` : Modifier les informations de profil d'un utilisateur
+- [GET] `/api/user/profil` : Récupérer les informations de profil d'un utilisateur
+
+#### Favoris
+
 - [GET] `/api/favorites` : Récupérer la liste des événements favoris d'un utilisateur
 - [POST] `/api/favorites/:id` : Ajouter un événement aux favoris d'un utilisateur 
 - [DELETE] `/api/favorites/:id` : Supprimer un événement des favoris d'un utilisateur
