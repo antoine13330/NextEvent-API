@@ -7,6 +7,23 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+//use JMS\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Groups;
+
+use Hateoas\Configuration\Annotation as Hateoas;
+/**
+ * @Hateoas\Relation(
+ *      "self",
+ *      href=@Hateoas\Route(
+ *      "Evenements.getEvenement",
+ *      parameters={
+ *      "idEvenement" = "expr(object.getId())"
+ *       }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getAllEvenements")
+ * )
+ *
+ */
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
 class Evenement
@@ -14,36 +31,47 @@ class Evenement
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private ?\DateTimeInterface $dateDebut = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private ?string $image = null;
 
     #[ORM\ManyToMany(targetEntity: Invite::class, mappedBy: 'evenementID')]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private Collection $invites;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private ?string $typeEvenement = null;
 
     #[ORM\OneToMany(mappedBy: 'evenement', targetEntity: Localisation::class)]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private Collection $localisation;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'evenements')]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private Collection $participant;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favori')]
+    #[Groups(['getEvenement', 'getAllEvenements'])]
     private Collection $users;
 
     public function __construct()
