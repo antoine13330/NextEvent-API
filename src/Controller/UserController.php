@@ -67,10 +67,10 @@ class UserController extends AbstractController
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $idCache = 'getOneUser';
+        $idCache = 'getUser';
         $jsonUser = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $request, $user) {
-            $item->tag("getOneUser");
-            $context = SerializationContext::create()->setGroups('getOneUser');
+            $item->tag("getUser");
+            $context = SerializationContext::create()->setGroups('getUser');
 
             $categories = $repository->find($user);
             return $serializer->serialize($categories, 'json', $context);
