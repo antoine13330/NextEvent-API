@@ -6,6 +6,22 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+
+use Hateoas\Configuration\Annotation as Hateoas;
+/**
+ * @Hateoas\Relation(
+ *      "self",
+ *      href=@Hateoas\Route(
+ *      "Evenements.getEvenement",
+ *      parameters={
+ *      "idEvenement" = "expr(object.getId())"
+ *       }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getAllEvenements")
+ * )
+ *
+ */
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
@@ -16,27 +32,35 @@ class User
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getUser', 'getAllUser'])]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getUser', 'getAllUser'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getUser', 'getAllUser'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['getUser', 'getAllUser'])]
     private ?string $photo = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getUser', 'getAllUser'])]
     private ?string $role = null;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Localisation::class)]
+    #[Groups(['getUser', 'getAllUser'])]
     private Collection $localisation;
 
     #[ORM\ManyToMany(targetEntity: Evenement::class, mappedBy: 'participant')]
+    #[Groups(['getUser', 'getAllUser'])]
     private Collection $evenements;
 
     #[ORM\ManyToMany(targetEntity: Evenement::class, inversedBy: 'users')]
+    #[Groups(['getUser', 'getAllUser'])]
     private Collection $favori;
 
     public function __construct()
