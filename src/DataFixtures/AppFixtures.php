@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Evenement;
+use App\Entity\Invite;
 use App\Entity\Localisation;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -19,24 +20,32 @@ class AppFixtures extends Fixture
             ->setPassword('password')
             ->setRole('admin');
         $manager->persist($admin);
-        //users
+
         for($i = 0; $i < 5;$i++) {
+
             $user = new User();
             $user->setUsername('user')
                 ->setEmail('user@test.com')
                 ->setPassword('password')
                 ->setRole('user');
             $manager->persist($user);
-        }
 
-        for($i = 0; $i < 5;$i++) {
+            $invite = new Invite();
+            $invite->setName('test');
+            $manager->persist($invite);
+
             $evenement = new Evenement();
             $evenement->setName('test')
                 ->setDescription('description')
                 ->setDateDebut(new \DateTime())
                 ->setDateFin(new \DateTime())
-                ->setTypeEvenement('festival');
+                ->setTypeEvenement('festival')
+                ->addInvite($invite)
+                ->addParticipant($user);
             $manager->persist($evenement);
+
+            $user->addFavori($evenement);
+            $manager->persist($user);
 
             $localisation = new Localisation();
             $localisation->setEvenement($evenement)
@@ -45,7 +54,6 @@ class AppFixtures extends Fixture
                 ->setVille('e');
             $manager->persist($localisation);
         }
-
 
         $manager->flush();
     }
