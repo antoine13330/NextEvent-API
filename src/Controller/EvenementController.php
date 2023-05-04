@@ -50,7 +50,7 @@ class EvenementController extends AbstractController
             $context = SerializationContext::create()->setGroups(["getEvenement"]);
 
             $evenement = $repository->findAll();
-            return $serializer->serialize($evenement, 'json', $context /*['groups' => 'getAllEvenements']*/);
+            return $serializer->serialize($evenement, 'json', $context);
 
         } );
         return new JsonResponse($jsonEvenement, 200, [], true);
@@ -72,8 +72,8 @@ class EvenementController extends AbstractController
             $item->tag("getEvenement");
             $context = SerializationContext::create()->setGroups('getEvenement');
 
-            $categories = $repository->find($evenement);
-            return $serializer->serialize($categories, 'json', $context);
+            $evenements = $repository->find($evenement);
+            return $serializer->serialize($evenements, 'json', $context);
         });
 
         return new JsonResponse($jsonEvenement, Response::HTTP_OK, [], true);
@@ -83,7 +83,7 @@ class EvenementController extends AbstractController
     /**
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    #[Route('/api/evenement/{idEvenement}', name: 'categories.deleteEvenement', methods: ['DELETE'])]
+    #[Route('/api/evenement/{idEvenement}', name: 'evenements.deleteEvenement', methods: ['DELETE'])]
     #[ParamConverter("evenement", class: 'App\Entity\Evenement', options: ["id" => "idEvenement"])]
     public function deleteEvenement(
         Evenement $evenement,
@@ -118,7 +118,7 @@ class EvenementController extends AbstractController
         $entityManager->persist($newEvenement);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllCategories"]);
+        $context = SerializationContext::create()->setGroups(["getAllEvenement"]);
 
         $jsonEvenement = $serializer->serialize($newEvenement, 'json', $context /*['groups' => 'getEvenement']*/);
         return new JsonResponse($jsonEvenement, Response::HTTP_CREATED, [], true);
@@ -156,9 +156,9 @@ class EvenementController extends AbstractController
         $entityManager->persist($evenement);
         $entityManager->flush();
 
-        $location = $urlGenerator->generate("categories.getEvenement", ['idEvenement' => $evenement->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $location = $urlGenerator->generate("evenements.getEvenement", ['idEvenement' => $evenement->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $context = SerializationContext::create()->setGroups(["getAllCategories"]);
+        $context = SerializationContext::create()->setGroups(["getAllEvenement"]);
 
         $jsonBoutique = $serializer->serialize($evenement, 'json', $context);
         return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [$location => ''], true);

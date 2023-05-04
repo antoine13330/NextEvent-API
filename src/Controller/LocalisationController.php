@@ -72,8 +72,8 @@ class LocalisationController extends AbstractController
             $item->tag("getLocalisation");
             $context = SerializationContext::create()->setGroups('getLocalisation');
 
-            $categories = $repository->find($localisation);
-            return $serializer->serialize($categories, 'json', $context);
+            $localisations = $repository->find($localisation);
+            return $serializer->serialize($localisations, 'json', $context);
         });
 
         return new JsonResponse($jsonLocalisation, Response::HTTP_OK, [], true);
@@ -83,7 +83,7 @@ class LocalisationController extends AbstractController
     /**
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    #[Route('/api/localisation/{idLocalisation}', name: 'categories.deleteLocalisation', methods: ['DELETE'])]
+    #[Route('/api/localisation/{idLocalisation}', name: 'localisation.deleteLocalisation', methods: ['DELETE'])]
     #[ParamConverter("localisation", class: 'App\Entity\Localisation', options: ["id" => "idLocalisation"])]
     public function deleteLocalisation(
         Localisation $localisation,
@@ -118,7 +118,7 @@ class LocalisationController extends AbstractController
         $entityManager->persist($newLocalisation);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllCategories"]);
+        $context = SerializationContext::create()->setGroups(["getAllLocalisation"]);
 
         $jsonLocalisation = $serializer->serialize($newLocalisation, 'json', $context /*['groups' => 'getLocalisation']*/);
         return new JsonResponse($jsonLocalisation, Response::HTTP_CREATED, [], true);
@@ -157,9 +157,9 @@ class LocalisationController extends AbstractController
         $entityManager->persist($localisation);
         $entityManager->flush();
 
-        $location = $urlGenerator->generate("categories.getLocalisation", ['idLocalisation' => $localisation->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $location = $urlGenerator->generate("localisations.getLocalisation", ['idLocalisation' => $localisation->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $context = SerializationContext::create()->setGroups(["getAllCategories"]);
+        $context = SerializationContext::create()->setGroups(["getAllLocalisation"]);
 
         $jsonBoutique = $serializer->serialize($localisation, 'json', $context);
         return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [$location => ''], true);

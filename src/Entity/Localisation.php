@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Repository\LocalisationRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\Groups;
 
 use Hateoas\Configuration\Annotation as Hateoas;
 /**

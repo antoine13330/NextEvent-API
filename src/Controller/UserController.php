@@ -41,8 +41,8 @@ class UserController extends AbstractController
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $idCache = 'getAllUsers';
-        $context = SerializationContext::create()->setGroups(["getAllUsers"]);
+        $idCache = 'getAllUser';
+        $context = SerializationContext::create()->setGroups(["getAllUser"]);
 
         $jsonUser = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context) {
             echo "MISE EN CACHE";
@@ -50,7 +50,7 @@ class UserController extends AbstractController
             $context = SerializationContext::create()->setGroups(["getUser"]);
 
             $user = $repository->findAll();
-            return $serializer->serialize($user, 'json', $context /*['groups' => 'getAllUsers']*/);
+            return $serializer->serialize($user, 'json', $context);
 
         } );
         return new JsonResponse($jsonUser, 200, [], true);
@@ -72,8 +72,8 @@ class UserController extends AbstractController
             $item->tag("getUser");
             $context = SerializationContext::create()->setGroups('getUser');
 
-            $categories = $repository->find($user);
-            return $serializer->serialize($categories, 'json', $context);
+            $users = $repository->find($user);
+            return $serializer->serialize($users, 'json', $context);
         });
 
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
@@ -83,7 +83,7 @@ class UserController extends AbstractController
     /**
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    #[Route('/api/user/{idUser}', name: 'categories.deleteUser', methods: ['DELETE'])]
+    #[Route('/api/user/{idUser}', name: 'user.deleteUser', methods: ['DELETE'])]
     #[ParamConverter("user", class: 'App\Entity\User', options: ["id" => "idUser"])]
     public function deleteUser(
         User $user,
@@ -118,7 +118,7 @@ class UserController extends AbstractController
         $entityManager->persist($newUser);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllCategories"]);
+        $context = SerializationContext::create()->setGroups(["getAllUser"]);
 
         $jsonUser = $serializer->serialize($newUser, 'json', $context /*['groups' => 'getUser']*/);
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, [], true);
@@ -157,9 +157,9 @@ class UserController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
-        $location = $urlGenerator->generate("categories.getUser", ['idUser' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $location = $urlGenerator->generate("users.getUser", ['idUser' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $context = SerializationContext::create()->setGroups(["getAllCategories"]);
+        $context = SerializationContext::create()->setGroups(["getAllUser"]);
 
         $jsonBoutique = $serializer->serialize($user, 'json', $context);
         return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [$location => ''], true);

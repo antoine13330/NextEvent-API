@@ -71,8 +71,8 @@ class InviteController extends AbstractController
             $item->tag("getInvite");
             $context = SerializationContext::create()->setGroups('getInvite');
 
-            $categories = $repository->find($invite);
-            return $serializer->serialize($categories, 'json', $context);
+            $invites = $repository->find($invite);
+            return $serializer->serialize($invites, 'json', $context);
         });
 
         return new JsonResponse($jsonInvite, Response::HTTP_OK, [], true);
@@ -82,7 +82,7 @@ class InviteController extends AbstractController
     /**
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    #[Route('/api/invite/{idInvite}', name: 'categories.deleteInvite', methods: ['DELETE'])]
+    #[Route('/api/invite/{idInvite}', name: 'invite.deleteInvite', methods: ['DELETE'])]
     #[ParamConverter("invite", class: 'App\Entity\Invite', options: ["id" => "idInvite"])]
     public function deleteInvite(
         Invite $Invite,
@@ -117,7 +117,7 @@ class InviteController extends AbstractController
         $entityManager->persist($newInvite);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllCategories"]);
+        $context = SerializationContext::create()->setGroups(["getAllInvite"]);
 
         $jsonInvite = $serializer->serialize($newInvite, 'json', $context /*['groups' => 'getInvite']*/);
         return new JsonResponse($jsonInvite, Response::HTTP_CREATED, [], true);
@@ -154,9 +154,9 @@ class InviteController extends AbstractController
         $entityManager->persist($invite);
         $entityManager->flush();
 
-        $location = $urlGenerator->generate("categories.getInvite", ['idInvite' => $invite->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $location = $urlGenerator->generate("invites.getInvite", ['idInvite' => $invite->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $context = SerializationContext::create()->setGroups(["getAllCategories"]);
+        $context = SerializationContext::create()->setGroups(["getAllInvite"]);
 
         $jsonBoutique = $serializer->serialize($invite, 'json', $context);
         return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [$location => ''], true);
