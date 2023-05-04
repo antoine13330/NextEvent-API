@@ -4,6 +4,22 @@ namespace App\Entity;
 
 use App\Repository\LocalisationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Groups;
+
+use Hateoas\Configuration\Annotation as Hateoas;
+/**
+ * @Hateoas\Relation(
+ *      "self",
+ *      href=@Hateoas\Route(
+ *      "Evenements.getEvenement",
+ *      parameters={
+ *      "idEvenement" = "expr(object.getId())"
+ *       }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getAllEvenements")
+ * )
+ *
+ */
 
 #[ORM\Entity(repositoryClass: LocalisationRepository::class)]
 class Localisation
@@ -14,21 +30,27 @@ class Localisation
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['getLocalisation', 'getAllLocalisation'])]
     private ?string $rue = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['getLocalisation', 'getAllLocalisation'])]
     private ?string $CP = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['getLocalisation', 'getAllLocalisation'])]
     private ?string $ville = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['getLocalisation', 'getAllLocalisation'])]
     private ?string $coordonnees = null;
 
     #[ORM\ManyToOne(inversedBy: 'localisation')]
+    #[Groups(['getLocalisation', 'getAllLocalisation'])]
     private ?Evenement $evenement = null;
 
     #[ORM\ManyToOne(inversedBy: 'localisation')]
+    #[Groups(['getLocalisation', 'getAllLocalisation'])]
     private ?User $user = null;
 
     public function getId(): ?int
