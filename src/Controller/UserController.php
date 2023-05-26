@@ -119,7 +119,7 @@ class UserController extends AbstractController
         $entityManager->persist($newUser);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllUser"]);
+        $context = SerializationContext::create()->setGroups(["getUser","getAllUser"]);
 
         $jsonUser = $serializer->serialize($newUser, 'json', $context /*['groups' => 'getUser']*/);
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, [], true);
@@ -134,7 +134,9 @@ class UserController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
+        UserRepository $UserRepository,
         ValidatorInterface $validator,
+        UrlGeneratorInterface $urlGenerator
     ): JsonResponse {
         $updateUser = $serializer->deserialize(
             $request->getContent(),
@@ -145,6 +147,7 @@ class UserController extends AbstractController
         $user->setUsername($updateUser->getUsername() ? $updateUser->getUsername() : $user->getUsername());
         $user->setEmail($updateUser->getEmail() ? $updateUser->getEmail() : $user->getEmail());
         $user->setPassword($updateUser->getPassword() ? $updateUser->getPassword() : $user->getPassword());
+        $user->setPhoto($updateUser->getPhoto() ? $updateUser->getPhoto() : $user->getPhoto());
 
         $errors = $validator->validate($user);
         if ($errors->count() >0) {
@@ -160,3 +163,4 @@ class UserController extends AbstractController
         return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
     }
 }
+

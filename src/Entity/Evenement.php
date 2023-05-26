@@ -34,23 +34,23 @@ class Evenement
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
     private ?\DateTimeInterface $dateDebut = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
     private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
     private ?string $image = null;
 
     #[ORM\ManyToMany(targetEntity: Invite::class, mappedBy: 'evenementID')]
@@ -58,7 +58,7 @@ class Evenement
     private Collection $invites;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
     private ?string $typeEvenement = null;
 
     #[ORM\OneToMany(mappedBy: 'evenement', targetEntity: Localisation::class)]
