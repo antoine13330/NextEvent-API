@@ -47,7 +47,6 @@ class UserController extends AbstractController
         $jsonUser = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context) {
             echo "MISE EN CACHE";
             $item->tag('UserCache');
-            $context = SerializationContext::create()->setGroups(["getUser"]);
 
             $user = $repository->findAll();
             return $serializer->serialize($user, 'json', $context);
@@ -70,7 +69,7 @@ class UserController extends AbstractController
         $idCache = 'getUser';
         $jsonUser = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $request, $user) {
             $item->tag("getUser");
-            $context = SerializationContext::create()->setGroups('getUser');
+            $context = SerializationContext::create()->setGroups('getAllUser');
 
             $users = $repository->find($user);
             return $serializer->serialize($users, 'json', $context);
@@ -85,6 +84,7 @@ class UserController extends AbstractController
      */
     #[Route('/api/user/{idUser}', name: 'user.deleteUser', methods: ['DELETE'])]
     #[ParamConverter("user", class: 'App\Entity\User', options: ["id" => "idUser"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function deleteUser(
         User $user,
         EntityManagerInterface $entityManager,
@@ -92,13 +92,13 @@ class UserController extends AbstractController
     ) :JsonResponse
     {
         $cache->invalidateTags(["getUser"]);
+        $entityManager->remove($user);
         $entityManager->flush();
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
     // create
     #[Route('/api/user', name: 'user.create', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function createUser(
         Request $request,
         SerializerInterface $serializer,
@@ -118,14 +118,14 @@ class UserController extends AbstractController
         $entityManager->persist($newUser);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllUser"]);
+        $context = SerializationContext::create()->setGroups(["getUser","getAllUser"]);
 
         $jsonUser = $serializer->serialize($newUser, 'json', $context /*['groups' => 'getUser']*/);
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, [], true);
     }
 
     // update
-    #[Route('/api/user/{idUser}', name: 'user.update', methods: ['PUT'])]
+    #[Route('/api/user/{idUser}', name: 'user.update', methods: ['PATCH'])]
     #[ParamConverter("user", class: 'App\Entity\User', options: ["id" => "idUser"])]
     public function updateUser(
         User $user,
@@ -145,24 +145,20 @@ class UserController extends AbstractController
         $user->setUsername($updateUser->getUsername() ? $updateUser->getUsername() : $user->getUsername());
         $user->setEmail($updateUser->getEmail() ? $updateUser->getEmail() : $user->getEmail());
         $user->setPassword($updateUser->getPassword() ? $updateUser->getPassword() : $user->getPassword());
+        $user->setPhoto($updateUser->getPhoto() ? $updateUser->getPhoto() : $user->getPhoto());
 
         $errors = $validator->validate($user);
         if ($errors->count() >0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
         }
 
-        $content = $request->toArray();
-        $id = $content['idUser'];
-
         $entityManager->persist($user);
         $entityManager->flush();
 
-        $location = $urlGenerator->generate("users.getUser", ['idUser' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        $context = SerializationContext::create()->setGroups(["getAllUser"]);
+        $context = SerializationContext::create()->setGroups(["getUser","getAllUser"]);
 
         $jsonBoutique = $serializer->serialize($user, 'json', $context);
-        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [$location => ''], true);
+        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
     }
 }
 
