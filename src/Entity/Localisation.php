@@ -30,19 +30,19 @@ class Localisation
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisation', 'getAllUser'])]
     private ?string $rue = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisation', 'getAllUser'])]
     private ?string $CP = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisation', 'getAllUser'])]
     private ?string $ville = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisation', 'getAllUser'])]
     private ?string $coordonnees = null;
 
     #[ORM\ManyToOne(inversedBy: 'localisation')]
