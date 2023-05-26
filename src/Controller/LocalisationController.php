@@ -47,10 +47,9 @@ class LocalisationController extends AbstractController
         $jsonLocalisation = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context) {
             echo "MISE EN CACHE";
             $item->tag('LocalisationCache');
-            $context = SerializationContext::create()->setGroups(["getLocalisation"]);
 
             $localisation = $repository->findAll();
-            return $serializer->serialize($localisation, 'json', $context /*['groups' => 'getAllLocalisations']*/);
+            return $serializer->serialize($localisation, 'json', $context);
 
         } );
         return new JsonResponse($jsonLocalisation, 200, [], true);
@@ -85,13 +84,15 @@ class LocalisationController extends AbstractController
      */
     #[Route('/api/localisation/{idLocalisation}', name: 'localisation.deleteLocalisation', methods: ['DELETE'])]
     #[ParamConverter("localisation", class: 'App\Entity\Localisation', options: ["id" => "idLocalisation"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function deleteLocalisation(
         Localisation $localisation,
         EntityManagerInterface $entityManager,
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $cache->invalidateTags(["getLocalisation"]);
+        $cache->invalidateTags(["getLocalisation", "getAllLocalisations"]);
+        $entityManager->remove($localisation);
         $entityManager->flush();
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -125,8 +126,9 @@ class LocalisationController extends AbstractController
     }
 
     // update
-    #[Route('/api/localisation/{idLocalisation}', name: 'localisation.update', methods: ['PUT'])]
+    #[Route('/api/localisation/{idLocalisation}', name: 'localisation.update', methods: ['PATCH'])]
     #[ParamConverter("localisation", class: 'App\Entity\Localisation', options: ["id" => "idLocalisation"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function updateLocalisation(
         Localisation $localisation,
         Request $request,
@@ -151,17 +153,12 @@ class LocalisationController extends AbstractController
             return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
         }
 
-        $content = $request->toArray();
-        $id = $content['idLocalisation'];
-
         $entityManager->persist($localisation);
         $entityManager->flush();
-
-        $location = $urlGenerator->generate("localisations.getLocalisation", ['idLocalisation' => $localisation->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $context = SerializationContext::create()->setGroups(["getAllLocalisation"]);
 
         $jsonBoutique = $serializer->serialize($localisation, 'json', $context);
-        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [$location => ''], true);
+        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
     }
 }

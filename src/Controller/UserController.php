@@ -41,7 +41,7 @@ class UserController extends AbstractController
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $idCache = 'getAllUser';
+        $idCache = 'getAllUsers';
         $context = SerializationContext::create()->setGroups(["getAllUser"]);
 
         $jsonUser = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context) {
@@ -69,7 +69,7 @@ class UserController extends AbstractController
         $idCache = 'getUser';
         $jsonUser = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $request, $user) {
             $item->tag("getUser");
-            $context = SerializationContext::create()->setGroups('getAllUser');
+            $context = SerializationContext::create()->setGroups('getUser');
 
             $users = $repository->find($user);
             return $serializer->serialize($users, 'json', $context);
@@ -91,7 +91,7 @@ class UserController extends AbstractController
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $cache->invalidateTags(["getUser"]);
+        $cache->invalidateTags(["getUser", "getAllUsers"]);
         $entityManager->remove($user);
         $entityManager->flush();
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
@@ -99,6 +99,7 @@ class UserController extends AbstractController
 
     // create
     #[Route('/api/user', name: 'user.create', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function createUser(
         Request $request,
         SerializerInterface $serializer,
@@ -127,6 +128,7 @@ class UserController extends AbstractController
     // update
     #[Route('/api/user/{idUser}', name: 'user.update', methods: ['PATCH'])]
     #[ParamConverter("user", class: 'App\Entity\User', options: ["id" => "idUser"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function updateUser(
         User $user,
         Request $request,
@@ -155,7 +157,7 @@ class UserController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getUser","getAllUser"]);
+        $context = SerializationContext::create()->setGroups(["getAllUsers"]);
 
         $jsonBoutique = $serializer->serialize($user, 'json', $context);
         return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
