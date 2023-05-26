@@ -47,7 +47,7 @@ class EvenementController extends AbstractController
         $jsonEvenement = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context) {
             echo "MISE EN CACHE";
             $item->tag('EvenementCache');
-            $context = SerializationContext::create()->setGroups(["getEvenement"]);
+            $context = SerializationContext::create()->setGroups(["getEvenements"]);
 
             $evenement = $repository->findAll();
             return $serializer->serialize($evenement, 'json', $context);
@@ -85,13 +85,15 @@ class EvenementController extends AbstractController
      */
     #[Route('/api/evenement/{idEvenement}', name: 'evenements.deleteEvenement', methods: ['DELETE'])]
     #[ParamConverter("evenement", class: 'App\Entity\Evenement', options: ["id" => "idEvenement"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function deleteEvenement(
         Evenement $evenement,
         EntityManagerInterface $entityManager,
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $cache->invalidateTags(["getEvenement"]);
+        $cache->invalidateTags(["getEvenement", "getAllEvenements"]);
+        $entityManager->remove($evenement);
         $entityManager->flush();
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -118,23 +120,22 @@ class EvenementController extends AbstractController
         $entityManager->persist($newEvenement);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllEvenement"]);
+        $context = SerializationContext::create()->setGroups(["getEvenement", "getAllEvenement"]);
 
         $jsonEvenement = $serializer->serialize($newEvenement, 'json', $context /*['groups' => 'getEvenement']*/);
         return new JsonResponse($jsonEvenement, Response::HTTP_CREATED, [], true);
     }
 
     // update
-    #[Route('/api/evenement/{idEvenement}', name: 'evenement.update', methods: ['PUT'])]
+    #[Route('/api/evenement/{idEvenement}', name: 'evenement.update', methods: ['PATCH'])]
     #[ParamConverter("evenement", class: 'App\Entity\Evenement', options: ["id" => "idEvenement"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function updateEvenement(
         Evenement $evenement,
         Request $request,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-        EvenementRepository $EvenementRepository,
         ValidatorInterface $validator,
-        UrlGeneratorInterface $urlGenerator
     ): JsonResponse {
         $updateEvenement = $serializer->deserialize(
             $request->getContent(),
@@ -150,17 +151,12 @@ class EvenementController extends AbstractController
             return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
         }
 
-        $content = $request->toArray();
-        $id = $content['idEvenement'];
-
         $entityManager->persist($evenement);
         $entityManager->flush();
 
-        $location = $urlGenerator->generate("evenements.getEvenement", ['idEvenement' => $evenement->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $context = SerializationContext::create()->setGroups(["getAllEvenements"]);
 
-        $context = SerializationContext::create()->setGroups(["getAllEvenement"]);
-
-        $jsonBoutique = $serializer->serialize($evenement, 'json', $context);
-        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [$location => ''], true);
+        $jsonEvevement = $serializer->serialize($evenement, 'json', $context);
+        return new JsonResponse($jsonEvevement, Response::HTTP_CREATED, [], true);
     }
 }

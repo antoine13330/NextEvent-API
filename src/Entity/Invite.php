@@ -13,12 +13,12 @@ use Hateoas\Configuration\Annotation as Hateoas;
  * @Hateoas\Relation(
  *      "self",
  *      href=@Hateoas\Route(
- *      "Evenements.getEvenement",
+ *      "invite.getInvite",
  *      parameters={
- *      "idEvenement" = "expr(object.getId())"
+ *      "idInvite" = "expr(object.getId())"
  *       }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getAllEvenements")
+ *      exclusion = @Hateoas\Exclusion(groups="getAllInvites")
  * )
  *
  */
@@ -29,14 +29,15 @@ class Invite
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getAllEvenements'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getInvite', 'getAllInvite'])]
+    #[Groups(['getInvite', 'getAllInvites'])]
     private ?string $name = null;
 
     #[ORM\ManyToMany(targetEntity: Evenement::class, inversedBy: 'invites')]
-    #[Groups(['getInvite', 'getAllInvite'])]
+    #[Groups(['getInvite', 'getAllInvites'])]
     private Collection $evenementID;
 
     public function __construct()

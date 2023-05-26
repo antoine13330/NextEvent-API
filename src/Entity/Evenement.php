@@ -30,7 +30,7 @@ class Evenement
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllInvites', 'getInvite', 'getAllLocalisations'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]

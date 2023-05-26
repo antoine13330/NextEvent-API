@@ -41,13 +41,12 @@ class UserController extends AbstractController
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $idCache = 'getAllUser';
+        $idCache = 'getAllUsers';
         $context = SerializationContext::create()->setGroups(["getAllUser"]);
 
         $jsonUser = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context) {
             echo "MISE EN CACHE";
             $item->tag('UserCache');
-            $context = SerializationContext::create()->setGroups(["getUser"]);
 
             $user = $repository->findAll();
             return $serializer->serialize($user, 'json', $context);
@@ -85,13 +84,15 @@ class UserController extends AbstractController
      */
     #[Route('/api/user/{idUser}', name: 'user.deleteUser', methods: ['DELETE'])]
     #[ParamConverter("user", class: 'App\Entity\User', options: ["id" => "idUser"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function deleteUser(
         User $user,
         EntityManagerInterface $entityManager,
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $cache->invalidateTags(["getUser"]);
+        $cache->invalidateTags(["getUser", "getAllUsers"]);
+        $entityManager->remove($user);
         $entityManager->flush();
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -125,16 +126,15 @@ class UserController extends AbstractController
     }
 
     // update
-    #[Route('/api/user/{idUser}', name: 'user.update', methods: ['PUT'])]
+    #[Route('/api/user/{idUser}', name: 'user.update', methods: ['PATCH'])]
     #[ParamConverter("user", class: 'App\Entity\User', options: ["id" => "idUser"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function updateUser(
         User $user,
         Request $request,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-        UserRepository $UserRepository,
         ValidatorInterface $validator,
-        UrlGeneratorInterface $urlGenerator
     ): JsonResponse {
         $updateUser = $serializer->deserialize(
             $request->getContent(),
@@ -151,18 +151,12 @@ class UserController extends AbstractController
             return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
         }
 
-        $content = $request->toArray();
-        $id = $content['idUser'];
-
         $entityManager->persist($user);
         $entityManager->flush();
 
-        $location = $urlGenerator->generate("users.getUser", ['idUser' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        $context = SerializationContext::create()->setGroups(["getAllUser"]);
+        $context = SerializationContext::create()->setGroups(["getAllUsers"]);
 
         $jsonBoutique = $serializer->serialize($user, 'json', $context);
-        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [$location => ''], true);
+        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
     }
 }
-

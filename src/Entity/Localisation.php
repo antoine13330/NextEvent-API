@@ -11,12 +11,12 @@ use Hateoas\Configuration\Annotation as Hateoas;
  * @Hateoas\Relation(
  *      "self",
  *      href=@Hateoas\Route(
- *      "Evenements.getEvenement",
+ *      "localisation.getLocalisation",
  *      parameters={
- *      "idEvenement" = "expr(object.getId())"
+ *      "idLocalisation" = "expr(object.getId())"
  *       }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getAllEvenements")
+ *      exclusion = @Hateoas\Exclusion(groups="getAllLocalisations")
  * )
  *
  */
@@ -27,30 +27,31 @@ class Localisation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getAllEvenements'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations'])]
     private ?string $rue = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllEvenements'])]
     private ?string $CP = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllEvenements'])]
     private ?string $ville = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations'])]
     private ?string $coordonnees = null;
 
     #[ORM\ManyToOne(inversedBy: 'localisation')]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations'])]
     private ?Evenement $evenement = null;
 
     #[ORM\ManyToOne(inversedBy: 'localisation')]
-    #[Groups(['getLocalisation', 'getAllLocalisation'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations'])]
     private ?User $user = null;
 
     public function getId(): ?int

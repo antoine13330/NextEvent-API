@@ -13,12 +13,12 @@ use Hateoas\Configuration\Annotation as Hateoas;
  * @Hateoas\Relation(
  *      "self",
  *      href=@Hateoas\Route(
- *      "Evenements.getEvenement",
+ *      "user.getUser",
  *      parameters={
- *      "idEvenement" = "expr(object.getId())"
+ *      "idUser" = "expr(object.getId())"
  *       }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getAllEvenements")
+ *      exclusion = @Hateoas\Exclusion(groups="getAllUsers")
  * )
  *
  */
@@ -29,39 +29,39 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getUser', 'getAllUser'])]
+    #[Groups(['getUser', 'getAllUsers', 'getAllLocalisations', 'getAllEvenements'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getUser', 'getAllUser'])]
+    #[Groups(['getUser', 'getAllUsers', 'getAllEvenements'])]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getUser', 'getAllUser'])]
+    #[Groups(['getUser', 'getAllUsers'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getUser', 'getAllUser'])]
+    #[Groups(['getUser', 'getAllUsers'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getUser', 'getAllUser'])]
+    #[Groups(['getUser', 'getAllUsers'])]
     private ?string $photo = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getUser', 'getAllUser'])]
+    #[Groups(['getUser', 'getAllUsers'])]
     private ?string $role = null;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Localisation::class)]
-    #[Groups(['getUser', 'getAllUser'])]
+    #[Groups(['getUser', 'getAllUsers'])]
     private Collection $localisation;
 
     #[ORM\ManyToMany(targetEntity: Evenement::class, mappedBy: 'participant')]
-    #[Groups(['getUser', 'getAllUser'])]
+    #[Groups(['getUser', 'getAllUsers'])]
     private Collection $evenements;
 
     #[ORM\ManyToMany(targetEntity: Evenement::class, inversedBy: 'users')]
-    #[Groups(['getUser', 'getAllUser'])]
+    #[Groups(['getUser', 'getAllUsers'])]
     private Collection $favori;
 
     public function __construct()

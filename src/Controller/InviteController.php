@@ -46,10 +46,9 @@ class InviteController extends AbstractController
         $jsonInvite = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context) {
             echo "MISE EN CACHE";
             $item->tag('inviteCache');
-            $context = SerializationContext::create()->setGroups(["getInvite"]);
 
             $invite = $repository->findAll();
-            return $serializer->serialize($invite, 'json', $context /*['groups' => 'getAllInvites']*/);
+            return $serializer->serialize($invite, 'json', $context);
 
         } );
         return new JsonResponse($jsonInvite, 200, [], true);
@@ -84,13 +83,15 @@ class InviteController extends AbstractController
      */
     #[Route('/api/invite/{idInvite}', name: 'invite.deleteInvite', methods: ['DELETE'])]
     #[ParamConverter("invite", class: 'App\Entity\Invite', options: ["id" => "idInvite"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function deleteInvite(
-        Invite $Invite,
+        Invite $invite,
         EntityManagerInterface $entityManager,
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $cache->invalidateTags(["getInvite"]);
+        $cache->invalidateTags(["getInvite", "getAllInvites"]);
+        $entityManager->remove($invite);
         $entityManager->flush();
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -117,21 +118,21 @@ class InviteController extends AbstractController
         $entityManager->persist($newInvite);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllInvite"]);
+        $context = SerializationContext::create()->setGroups(["getAllInvites"]);
 
-        $jsonInvite = $serializer->serialize($newInvite, 'json', $context /*['groups' => 'getInvite']*/);
+        $jsonInvite = $serializer->serialize($newInvite, 'json', $context);
         return new JsonResponse($jsonInvite, Response::HTTP_CREATED, [], true);
     }
 
     // update
-    #[Route('/api/invite/{idInvite}', name: 'invite.update', methods: ['PUT'])]
+    #[Route('/api/invite/{idInvite}', name: 'invite.update', methods: ['PATCH'])]
     #[ParamConverter("invite", class: 'App\Entity\Invite', options: ["id" => "idInvite"])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function updateInvite(
         Invite $invite,
         Request $request,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-        InviteRepository $InviteRepository,
         ValidatorInterface $validator,
         UrlGeneratorInterface $urlGenerator
     ): JsonResponse {
@@ -148,17 +149,12 @@ class InviteController extends AbstractController
             return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
         }
 
-        $content = $request->toArray();
-        $id = $content['idInvite'];
-
         $entityManager->persist($invite);
         $entityManager->flush();
 
-        $location = $urlGenerator->generate("invites.getInvite", ['idInvite' => $invite->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        $context = SerializationContext::create()->setGroups(["getAllInvite"]);
+        $context = SerializationContext::create()->setGroups(["getAllInvites"]);
 
         $jsonBoutique = $serializer->serialize($invite, 'json', $context);
-        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [$location => ''], true);
+        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
     }
 }
