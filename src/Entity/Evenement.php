@@ -14,7 +14,7 @@ use Hateoas\Configuration\Annotation as Hateoas;
  * @Hateoas\Relation(
  *      "self",
  *      href=@Hateoas\Route(
- *      "evenement.getEvenement",
+ *      "evenement.getAll",
  *      parameters={
  *      "idEvenement" = "expr(object.getId())"
  *       }

@@ -42,7 +42,7 @@ class UserController extends AbstractController
     ) :JsonResponse
     {
         $idCache = 'getAllUsers';
-        $context = SerializationContext::create()->setGroups(["getAllUser"]);
+        $context = SerializationContext::create()->setGroups(["getAllUsers"]);
 
         $jsonUser = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context) {
             echo "MISE EN CACHE";
@@ -119,7 +119,7 @@ class UserController extends AbstractController
         $entityManager->persist($newUser);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getUser","getAllUser"]);
+        $context = SerializationContext::create()->setGroups(["getAllUsers"]);
 
         $jsonUser = $serializer->serialize($newUser, 'json', $context /*['groups' => 'getUser']*/);
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, [], true);

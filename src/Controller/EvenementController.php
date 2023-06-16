@@ -47,7 +47,6 @@ class EvenementController extends AbstractController
         $jsonEvenement = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context) {
             echo "MISE EN CACHE";
             $item->tag('EvenementCache');
-            $context = SerializationContext::create()->setGroups(["getEvenements"]);
 
             $evenement = $repository->findAll();
             return $serializer->serialize($evenement, 'json', $context);
@@ -120,7 +119,7 @@ class EvenementController extends AbstractController
         $entityManager->persist($newEvenement);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getEvenement", "getAllEvenement"]);
+        $context = SerializationContext::create()->setGroups(["getAllEvenement"]);
 
         $jsonEvenement = $serializer->serialize($newEvenement, 'json', $context /*['groups' => 'getEvenement']*/);
         return new JsonResponse($jsonEvenement, Response::HTTP_CREATED, [], true);
