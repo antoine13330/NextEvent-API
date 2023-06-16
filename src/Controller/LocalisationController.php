@@ -119,7 +119,7 @@ class LocalisationController extends AbstractController
         $entityManager->persist($newLocalisation);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllLocalisation"]);
+        $context = SerializationContext::create()->setGroups(["getAllLocalisations"]);
 
         $jsonLocalisation = $serializer->serialize($newLocalisation, 'json', $context /*['groups' => 'getLocalisation']*/);
         return new JsonResponse($jsonLocalisation, Response::HTTP_CREATED, [], true);
@@ -156,7 +156,7 @@ class LocalisationController extends AbstractController
         $entityManager->persist($localisation);
         $entityManager->flush();
 
-        $context = SerializationContext::create()->setGroups(["getAllLocalisation"]);
+        $context = SerializationContext::create()->setGroups(["getAllLocalisations"]);
 
         $jsonBoutique = $serializer->serialize($localisation, 'json', $context);
         return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
