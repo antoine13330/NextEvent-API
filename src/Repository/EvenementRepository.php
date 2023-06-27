@@ -39,20 +39,16 @@ class EvenementRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return Evenement[] Returns an array of Evenement objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function findByType($type): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.typeEvenement = :val')
+            ->setParameter('val', $type)
+            ->orderBy('e.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 
 //    public function findOneBySomeField($value): ?Evenement
 //    {
