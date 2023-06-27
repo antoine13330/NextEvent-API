@@ -31,23 +31,23 @@ class Localisation
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllUsers'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllUsers', 'getUser'])]
     private ?string $rue = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllUsers'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllUsers', 'getUser'])]
     private ?string $CP = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllUsers'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllUsers', 'getUser'])]
     private ?string $ville = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllUsers'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllUsers', 'getUser'])]
     private ?string $coordonnees = null;
 
     #[ORM\ManyToOne(inversedBy: 'localisation')]
-    #[Groups(['getLocalisation', 'getAllLocalisations'])]
+    #[Groups(['getLocalisation', 'getAllLocalisations', 'getAllUsers', 'getUser'])]
     private ?Evenement $evenement = null;
 
     #[ORM\ManyToOne(inversedBy: 'localisation')]

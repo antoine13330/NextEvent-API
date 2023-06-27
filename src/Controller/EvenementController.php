@@ -158,4 +158,30 @@ class EvenementController extends AbstractController
         $jsonEvevement = $serializer->serialize($evenement, 'json', $context);
         return new JsonResponse($jsonEvevement, Response::HTTP_CREATED, [], true);
     }
+
+    //getEventsByType
+    #[Route('/api/evenementsByType', name: 'evenement.getByType', methods: ['GET'])]
+    public function getEvenementsByType(
+        EvenementRepository $repository,
+        Request $request,
+        SerializerInterface $serializer,
+        TagAwareCacheInterface $cache
+    ) :JsonResponse
+    {
+        $idCache = 'getEvenementsByType';
+        $context = SerializationContext::create()->setGroups(["getEvenementsByType"]);
+
+        //$type = $request->request->get('type');
+        $data = json_decode($request->getContent(), true);
+        $type = $data['type'];
+
+        $jsonEvenements = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $context, $type) {
+            echo "MISE EN CACHE";
+            $item->tag('EvenementCache');
+
+            $evenements = $repository->findByType($type);
+            return $serializer->serialize($evenements, 'json', $context);
+        } );
+        return new JsonResponse($jsonEvenements, 200, [], true);
+    }
 }

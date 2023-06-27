@@ -30,31 +30,31 @@ class Evenement
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getEvenement', 'getAllEvenements', 'getAllInvites', 'getInvite', 'getAllLocalisations'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllInvites', 'getInvite', 'getAllLocalisations', 'getAllUsers', 'getUser', 'getEvenementsByType'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser', 'getAllUsers', 'getUser', 'getEvenementsByType'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser', 'getEvenementsByType'])]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser', 'getEvenementsByType'])]
     private ?\DateTimeInterface $dateDebut = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser', 'getEvenementsByType'])]
     private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUser', 'getEvenementsByType'])]
     private ?string $image = null;
 
     #[ORM\ManyToMany(targetEntity: Invite::class, mappedBy: 'evenementID')]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getEvenementsByType'])]
     private Collection $invites;
 
     #[ORM\Column(length: 255)]
@@ -62,15 +62,15 @@ class Evenement
     private ?string $typeEvenement = null;
 
     #[ORM\OneToMany(mappedBy: 'evenement', targetEntity: Localisation::class)]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getEvenementsByType'])]
     private Collection $localisation;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'evenements')]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getEvenementsByType'])]
     private Collection $participant;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favori')]
-    #[Groups(['getEvenement', 'getAllEvenements'])]
+    #[Groups(['getEvenement', 'getAllEvenements', 'getAllUsers', 'getUser', 'getEvenementsByType'])]
     private Collection $users;
 
     public function __construct()
