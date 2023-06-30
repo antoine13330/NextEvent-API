@@ -14,7 +14,9 @@ NextEvent est une application pour référencer des événements de jeux vidéo 
 
 1. Clonez ce référentiel sur votre machine locale.
 2. Installez les dépendances avec la commande `composer install`
-3. [Générer les clés d'accés privées JWT](https://symfony.com/bundles/LexikJWTAuthenticationBundle/current/index.html#generate-the-ssl-keys)
+3. `php bin/console d:m:m`
+4. `php bin/console doctrine:fixtures:load`
+5. [Générer les clés d'accés privées JWT](https://symfony.com/bundles/LexikJWTAuthenticationBundle/current/index.html#generate-the-ssl-keys)
 
 ## API
 
@@ -24,21 +26,25 @@ L'API de NextEvent est accessible via l'URL suivante : `http://next-event/api/ne
 
 #### Evenements
 
-- [GET] `/api/:type/events` : Récupérer la liste des événements par type
+- [GET] `/api/evenements` : Récupérer la liste des événements
+- [GET] `/api/evenementsByType` + "type": "festival" ou "esport" dans le corps de la requête : Récupérer la liste des événements par type
 - [GET] `/api/:type/events/:date` : Récupérer la liste des événements par type & date
-- [GET] `/api/events/:id` : Récupérer les informations sur un événement spécifique
-- [PUT] `/api/events/:id` : Modifier les informations sur un événement spécifique 🔐
-- [DELETE] `/api/events/:id` : Supprimer un événement spécifique 🔐
+- [GET] `/api/evenement/:id` : Récupérer les informations sur un événement spécifique
+- [PATCH] `/api/evenement/:id` : Modifier les informations sur un événement spécifique 🔐
+- [DELETE] `/api/evenement/:id` : Supprimer un événement spécifique 🔐
 
 #### Auth 
-- [POST] `api/auth/sign-up` : S'enregistrer
+- [POST] `/api/login` : S'enregistrer
+- [POST] `/api/logout` : Se déconnecter
 - [POST] `api/auth/token` : Se connecter et récupérer le token
 - [POST] `api/auth/token_renew` : Mettre à jour le token expiré
+- 
 #### Utilisateur
 
-- [PUT] `/api/user/profil` : Modifier les informations de profil d'un utilisateur 
-- [GET] `/api/user/profil` : Récupérer les informations de profil d'un utilisateur
-- [DELETE] `/api/user` : Supprimer un utilisateur 🔐
+- [GET] `/api/users` : Récuper tous les utilisateurs
+- [GET] `/api/user/` : Récupérer les informations de profil d'un utilisateur
+- [PATCH] `/api/user/` : Modifier les informations de profil d'un utilisateur
+- [DELETE] `/api/user/` : Supprimer un utilisateur 🔐
 
 #### Favoris
 
@@ -50,6 +56,7 @@ L'API de NextEvent est accessible via l'URL suivante : `http://next-event/api/ne
 
 L'authentification est requise pour accéder aux endpoints `/profil`, `/favorites`, `/favorites/add/:id` et `/favorites/remove/:id`.
 De plus tous les endpoints avec un 🔐 sont accessibles seulement aux utilisateurs avec `ROLE_ADMIN`.
+
 ## Technologies utilisées
 
 - Symfony
