@@ -24,7 +24,7 @@ use Hateoas\Configuration\Annotation as Hateoas;
  */
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+class User implements \Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

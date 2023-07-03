@@ -101,7 +101,7 @@ class EvenementController extends AbstractController
                 $entityManager->remove($evenement);
                 $entityManager->flush();
             } else {
-                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse(['message' => 'Vous devez être admin'], Response::HTTP_UNAUTHORIZED);
             }
         } else {
             return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
@@ -144,7 +144,7 @@ class EvenementController extends AbstractController
                 return new JsonResponse($jsonEvenement, Response::HTTP_CREATED, [], true);
 
             } else {
-                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse(['message' => 'Vous devez être admin'], Response::HTTP_UNAUTHORIZED);
             }
         } else {
             return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
@@ -190,7 +190,7 @@ class EvenementController extends AbstractController
                 $jsonEvevement = $serializer->serialize($evenement, 'json', $context);
                 return new JsonResponse($jsonEvevement, Response::HTTP_CREATED, [], true);
             } else {
-                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse(['message' => 'Vous devez être admin'], Response::HTTP_UNAUTHORIZED);
             }
         } else {
             return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);

@@ -105,7 +105,7 @@ class InviteController extends AbstractController
                 $entityManager->flush();
                 return new JsonResponse(null, Response::HTTP_NO_CONTENT);
             } else {
-                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse(['message' => 'Vous devez être admin'], Response::HTTP_UNAUTHORIZED);
             }
         } else {
             return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
@@ -146,7 +146,7 @@ class InviteController extends AbstractController
                 $jsonInvite = $serializer->serialize($newInvite, 'json', $context);
                 return new JsonResponse($jsonInvite, Response::HTTP_CREATED, [], true);
             } else {
-                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse(['message' => 'Vous devez être admin'], Response::HTTP_UNAUTHORIZED);
             }
         } else {
             return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
@@ -192,7 +192,7 @@ class InviteController extends AbstractController
                 $jsonBoutique = $serializer->serialize($invite, 'json', $context);
                 return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
             } else {
-                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse(['message' => 'Vous devez être admin'], Response::HTTP_UNAUTHORIZED);
             }
         } else {
             return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);

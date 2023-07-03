@@ -11,17 +11,23 @@ use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use JMS\Serializer\SerializerInterface;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializationContext;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserController extends AbstractController
 {
+    /**
+     * @var UserPasswordHasherInterface
+     */
+    private UserPasswordHasherInterface $userPasswordHasher;
+
+    public function __construct(UserPasswordHasherInterface $userPasswordHasher) {
+        $this->userPasswordHasher = $userPasswordHasher;
+    }
     #[Route('/user', name: 'app_user')]
     public function index(): JsonResponse
     {
@@ -102,7 +108,7 @@ class UserController extends AbstractController
                 $entityManager->flush();
                 return new JsonResponse(null, Response::HTTP_NO_CONTENT);
             } else {
-                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse(['message' => 'Vous devez être admin'], Response::HTTP_UNAUTHORIZED);
             }
         } else {
             return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
@@ -120,6 +126,9 @@ class UserController extends AbstractController
     ) :JsonResponse
     {
         $apiToken = $request->headers->get('apiToken');
+
+        //$this->userPasswordHasher->hashPassword($user, $password);
+
         /** @var User $connectedUSer */
         $connectedUSer = $userRepository->findOneBy(['apiToken' => $apiToken]);
 
@@ -143,7 +152,7 @@ class UserController extends AbstractController
                 return new JsonResponse($jsonUser, Response::HTTP_CREATED, [], true);
 
             } else {
-                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse(['message' => 'Vous devez être admin'], Response::HTTP_UNAUTHORIZED);
             }
         } else {
             return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
@@ -194,7 +203,7 @@ class UserController extends AbstractController
                 return new JsonResponse($jsonUSer, Response::HTTP_CREATED, [], true);
 
             } else {
-                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+                return new JsonResponse(['message' => 'Vous devez être admin'], Response::HTTP_UNAUTHORIZED);
             }
         } else {
             return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
@@ -212,7 +221,7 @@ class UserController extends AbstractController
 
         $user = $userRepository->findOneBy(['username' => $username]);
         if ($user !== null) {
-            if ($password !== $user->getPassword()) {
+            if (!$this->userPasswordHasher->isPasswordValid($user, $password)) {
                 return new JsonResponse(['message' => 'Le mot de passe est invalide'], Response::HTTP_UNAUTHORIZED);
             }
             $generatedToken = $serializer->serialize($user, 'json');
