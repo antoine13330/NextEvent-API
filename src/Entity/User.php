@@ -29,15 +29,15 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getUser', 'getAllUsers', 'getAllLocalisations', 'getAllEvenements'])]
+    #[Groups(['getUser', 'getAllUsers', 'getAllLocalisations', 'getAllEvenements', 'login'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getUser', 'getAllUsers', 'getAllEvenements'])]
+    #[Groups(['getUser', 'getAllUsers', 'getAllEvenements', 'login'])]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getUser', 'getAllUsers'])]
+    #[Groups(['getUser', 'getAllUsers', 'login'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
@@ -45,24 +45,27 @@ class User
     private ?string $password = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getUser', 'getAllUsers'])]
+    #[Groups(['getUser', 'getAllUsers', 'login'])]
     private ?string $photo = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getUser', 'getAllUsers'])]
+    #[Groups(['getUser', 'getAllUsers', 'login'])]
     private ?string $role = null;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Localisation::class)]
-    #[Groups(['getUser', 'getAllUsers'])]
+    #[Groups(['getUser', 'getAllUsers', 'login'])]
     private Collection $localisation;
 
     #[ORM\ManyToMany(targetEntity: Evenement::class, mappedBy: 'participant')]
-    #[Groups(['getUser', 'getAllUsers'])]
+    #[Groups(['getUser', 'getAllUsers', 'login'])]
     private Collection $evenements;
 
     #[ORM\ManyToMany(targetEntity: Evenement::class, inversedBy: 'users')]
-    #[Groups(['getUser', 'getAllUsers'])]
+    #[Groups(['getUser', 'getAllUsers', 'login'])]
     private Collection $favori;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $apiToken;
 
     public function __construct()
     {
@@ -215,6 +218,22 @@ class User
         $this->favori->removeElement($favori);
 
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    /**
+     * @param string|null $apiToken
+     */
+    public function setApiToken(?string $apiToken): void
+    {
+        $this->apiToken = $apiToken;
     }
 
 }

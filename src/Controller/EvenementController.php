@@ -2,23 +2,21 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\EvenementRepository;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use App\Entity\Evenement;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use JMS\Serializer\SerializerInterface;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializationContext;
 
 class EvenementController extends AbstractController
@@ -67,9 +65,10 @@ class EvenementController extends AbstractController
     ) :JsonResponse
     {
         $idCache = 'getEvenement';
+
         $jsonEvenement = $cache->get($idCache, function (ItemInterface $item) use ($repository, $serializer, $request, $evenement) {
             $item->tag("getEvenement");
-            $context = SerializationContext::create()->setGroups('getEvenement');
+            $context = SerializationContext::create()->setGroups(["getEvenement"]);
 
             $evenements = $repository->find($evenement);
             return $serializer->serialize($evenements, 'json', $context);
@@ -84,79 +83,118 @@ class EvenementController extends AbstractController
      */
     #[Route('/api/evenement/{idEvenement}', name: 'evenements.deleteEvenement', methods: ['DELETE'])]
     #[ParamConverter("evenement", class: 'App\Entity\Evenement', options: ["id" => "idEvenement"])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function deleteEvenement(
+        Request $request,
         Evenement $evenement,
+        UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $cache->invalidateTags(["getEvenement", "getAllEvenements"]);
-        $entityManager->remove($evenement);
-        $entityManager->flush();
+        $apiToken = $request->headers->get('apiToken');
+        /** @var User $connectedUSer */
+        $connectedUSer = $userRepository->findOneBy(['apiToken' => $apiToken]);
+
+        if ($connectedUSer !== null) {
+            if ($connectedUSer->getRole() === 'admin') {
+                $cache->invalidateTags(["getEvenement", "getAllEvenements"]);
+                $entityManager->remove($evenement);
+                $entityManager->flush();
+            } else {
+                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+            }
+        } else {
+            return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+        }
+
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
     // create
     #[Route('/api/evenement', name: 'evenement.create', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function createEvenement(
         Request $request,
+        UserRepository $userRepository,
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
     ) :JsonResponse
     {
-        $newEvenement = $serializer->deserialize(
-            $request->getContent(),
-            Evenement::class,
-            'json');
+        $apiToken = $request->headers->get('apiToken');
+        /** @var User $connectedUSer */
+        $connectedUSer = $userRepository->findOneBy(['apiToken' => $apiToken]);
 
-        $errors = $validator->validate($newEvenement);
-        if ($errors->count() >0) {
-            return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
+        if ($connectedUSer !== null) {
+            if ($connectedUSer->getRole() === 'admin') {
+                $newEvenement = $serializer->deserialize(
+                    $request->getContent(),
+                    Evenement::class,
+                    'json');
+
+                $errors = $validator->validate($newEvenement);
+                if ($errors->count() >0) {
+                    return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
+                }
+                $entityManager->persist($newEvenement);
+                $entityManager->flush();
+
+                $context = SerializationContext::create()->setGroups(["getAllEvenement"]);
+
+                $jsonEvenement = $serializer->serialize($newEvenement, 'json', $context /*['groups' => 'getEvenement']*/);
+                return new JsonResponse($jsonEvenement, Response::HTTP_CREATED, [], true);
+
+            } else {
+                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+            }
+        } else {
+            return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
         }
-        $entityManager->persist($newEvenement);
-        $entityManager->flush();
-
-        $context = SerializationContext::create()->setGroups(["getAllEvenement"]);
-
-        $jsonEvenement = $serializer->serialize($newEvenement, 'json', $context /*['groups' => 'getEvenement']*/);
-        return new JsonResponse($jsonEvenement, Response::HTTP_CREATED, [], true);
     }
 
     // update
     #[Route('/api/evenement/{idEvenement}', name: 'evenement.update', methods: ['PATCH'])]
     #[ParamConverter("evenement", class: 'App\Entity\Evenement', options: ["id" => "idEvenement"])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function updateEvenement(
         Evenement $evenement,
         Request $request,
+        UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         ValidatorInterface $validator,
     ): JsonResponse {
-        $updateEvenement = $serializer->deserialize(
-            $request->getContent(),
-            Evenement::class,
-            'json'
-        );
 
-        $evenement->setName($updateEvenement->getName() ? $updateEvenement->getName() : $evenement->getName());
-        $evenement->setDescription($updateEvenement->getDescription() ? $updateEvenement->getDescription() : $evenement->getDescription());
+        $apiToken = $request->headers->get('apiToken');
+        /** @var User $connectedUSer */
+        $connectedUSer = $userRepository->findOneBy(['apiToken' => $apiToken]);
+        if ($connectedUSer !== null) {
+            if ($connectedUSer->getRole() === 'admin') {
+                $updateEvenement = $serializer->deserialize(
+                    $request->getContent(),
+                    Evenement::class,
+                    'json'
+                );
 
-        $errors = $validator->validate($evenement);
-        if ($errors->count() >0) {
-            return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
+                $evenement->setName($updateEvenement->getName() ? $updateEvenement->getName() : $evenement->getName());
+                $evenement->setDescription($updateEvenement->getDescription() ? $updateEvenement->getDescription() : $evenement->getDescription());
+
+                $errors = $validator->validate($evenement);
+                if ($errors->count() >0) {
+                    return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
+                }
+
+                $entityManager->persist($evenement);
+                $entityManager->flush();
+
+                $context = SerializationContext::create()->setGroups(["getAllEvenements"]);
+
+                $jsonEvevement = $serializer->serialize($evenement, 'json', $context);
+                return new JsonResponse($jsonEvevement, Response::HTTP_CREATED, [], true);
+            } else {
+                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+            }
+        } else {
+            return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
         }
-
-        $entityManager->persist($evenement);
-        $entityManager->flush();
-
-        $context = SerializationContext::create()->setGroups(["getAllEvenements"]);
-
-        $jsonEvevement = $serializer->serialize($evenement, 'json', $context);
-        return new JsonResponse($jsonEvevement, Response::HTTP_CREATED, [], true);
     }
 
     //getEventsByType
@@ -171,7 +209,6 @@ class EvenementController extends AbstractController
         $idCache = 'getEvenementsByType';
         $context = SerializationContext::create()->setGroups(["getEvenementsByType"]);
 
-        //$type = $request->request->get('type');
         $data = json_decode($request->getContent(), true);
         $type = $data['type'];
 

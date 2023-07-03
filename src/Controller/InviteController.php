@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -86,14 +88,28 @@ class InviteController extends AbstractController
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function deleteInvite(
         Invite $invite,
+        Request $request,
+        UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         TagAwareCacheInterface $cache
     ) :JsonResponse
     {
-        $cache->invalidateTags(["getInvite", "getAllInvites"]);
-        $entityManager->remove($invite);
-        $entityManager->flush();
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        $apiToken = $request->headers->get('apiToken');
+        /** @var User $connectedUSer */
+        $connectedUSer = $userRepository->findOneBy(['apiToken' => $apiToken]);
+
+        if ($connectedUSer !== null) {
+            if ($connectedUSer->getRole() === 'admin') {
+                $cache->invalidateTags(["getInvite", "getAllInvites"]);
+                $entityManager->remove($invite);
+                $entityManager->flush();
+                return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+            } else {
+                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+            }
+        } else {
+            return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+        }
     }
 
     // create
@@ -101,27 +117,40 @@ class InviteController extends AbstractController
     #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function createInvite(
         Request $request,
+        UserRepository $userRepository,
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
     ) :JsonResponse
     {
-        $newInvite = $serializer->deserialize(
-            $request->getContent(),
-            Invite::class,
-            'json');
+        $apiToken = $request->headers->get('apiToken');
+        /** @var User $connectedUSer */
+        $connectedUSer = $userRepository->findOneBy(['apiToken' => $apiToken]);
 
-        $errors = $validator->validate($newInvite);
-        if ($errors->count() >0) {
-            return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
+        if ($connectedUSer !== null) {
+            if ($connectedUSer->getRole() === 'admin') {
+                $newInvite = $serializer->deserialize(
+                    $request->getContent(),
+                    Invite::class,
+                    'json');
+
+                $errors = $validator->validate($newInvite);
+                if ($errors->count() >0) {
+                    return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
+                }
+                $entityManager->persist($newInvite);
+                $entityManager->flush();
+
+                $context = SerializationContext::create()->setGroups(["getAllInvites"]);
+
+                $jsonInvite = $serializer->serialize($newInvite, 'json', $context);
+                return new JsonResponse($jsonInvite, Response::HTTP_CREATED, [], true);
+            } else {
+                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+            }
+        } else {
+            return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
         }
-        $entityManager->persist($newInvite);
-        $entityManager->flush();
-
-        $context = SerializationContext::create()->setGroups(["getAllInvites"]);
-
-        $jsonInvite = $serializer->serialize($newInvite, 'json', $context);
-        return new JsonResponse($jsonInvite, Response::HTTP_CREATED, [], true);
     }
 
     // update
@@ -131,30 +160,42 @@ class InviteController extends AbstractController
     public function updateInvite(
         Invite $invite,
         Request $request,
+        UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         ValidatorInterface $validator,
-        UrlGeneratorInterface $urlGenerator
     ): JsonResponse {
-        $updateInvite = $serializer->deserialize(
-            $request->getContent(),
-            Invite::class,
-            'json'
-        );
+        $apiToken = $request->headers->get('apiToken');
+        /** @var User $connectedUSer */
+        $connectedUSer = $userRepository->findOneBy(['apiToken' => $apiToken]);
 
-        $invite->setName($updateInvite->getName() ? $updateInvite->getName() : $invite->getName());
+        if ($connectedUSer !== null) {
+            if ($connectedUSer->getRole() === 'admin') {
+                $updateInvite = $serializer->deserialize(
+                    $request->getContent(),
+                    Invite::class,
+                    'json'
+                );
 
-        $errors = $validator->validate($invite);
-        if ($errors->count() >0) {
-            return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
+                $invite->setName($updateInvite->getName() ? $updateInvite->getName() : $invite->getName());
+
+                $errors = $validator->validate($invite);
+                if ($errors->count() >0) {
+                    return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
+                }
+
+                $entityManager->persist($invite);
+                $entityManager->flush();
+
+                $context = SerializationContext::create()->setGroups(["getAllInvites"]);
+
+                $jsonBoutique = $serializer->serialize($invite, 'json', $context);
+                return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
+            } else {
+                return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
+            }
+        } else {
+            return new JsonResponse(['message' => 'Vous devez être connecté'], Response::HTTP_UNAUTHORIZED);
         }
-
-        $entityManager->persist($invite);
-        $entityManager->flush();
-
-        $context = SerializationContext::create()->setGroups(["getAllInvites"]);
-
-        $jsonBoutique = $serializer->serialize($invite, 'json', $context);
-        return new JsonResponse($jsonBoutique, Response::HTTP_CREATED, [], true);
     }
 }
