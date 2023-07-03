@@ -21,6 +21,9 @@ use JMS\Serializer\SerializerInterface;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializationContext;
 
+use Cloudinary\Cloudinary;
+use Cloudinary\Configuration\Configuration;
+
 class EvenementController extends AbstractController
 {
     #[Route('/evenement', name: 'app_evenement')]
@@ -99,7 +102,7 @@ class EvenementController extends AbstractController
 
     // create
     #[Route('/api/evenement', name: 'evenement.create', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
+    // #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function createEvenement(
         Request $request,
         SerializerInterface $serializer,
@@ -107,10 +110,23 @@ class EvenementController extends AbstractController
         ValidatorInterface $validator,
     ) :JsonResponse
     {
+        dd($request);
+        $cloudinary = new Cloudinary(/*$cloudinaryConfig*/);
         $newEvenement = $serializer->deserialize(
             $request->getContent(),
             Evenement::class,
             'json');
+        
+        $imageFile = $request->files->get('image');
+
+        if ($imageFile && $imageFile->isValid()) {
+        // Envoyer l'image vers Cloudinary
+        $cloudinaryResponse = $cloudinary->uploadApi()->upload($imageFile->getPathname());
+        
+        // Récupérer l'URL sécurisée de l'image sur Cloudinary
+        $publicId = $cloudinaryResponse;
+        dd($publicId);
+        }
 
         $errors = $validator->validate($newEvenement);
         if ($errors->count() >0) {
@@ -128,7 +144,7 @@ class EvenementController extends AbstractController
     // update
     #[Route('/api/evenement/{idEvenement}', name: 'evenement.update', methods: ['PATCH'])]
     #[ParamConverter("evenement", class: 'App\Entity\Evenement', options: ["id" => "idEvenement"])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
+    // #[IsGranted('ROLE_ADMIN', message: 'Vous n\'êtes pas admin')]
     public function updateEvenement(
         Evenement $evenement,
         Request $request,
