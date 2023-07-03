@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Cloudinary\Api\ApiResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,17 +13,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use JMS\Serializer\SerializerInterface;
-use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializationContext;
-
-use Cloudinary\Cloudinary;
+use Symfony\Component\Uid\Uuid;
 use Cloudinary\Configuration\Configuration;
+use Cloudinary\Api\Upload\UploadApi;
+use Exception;
 
 class EvenementController extends AbstractController
 {
@@ -110,35 +109,40 @@ class EvenementController extends AbstractController
         ValidatorInterface $validator,
     ) :JsonResponse
     {
-        dd($request);
-        $cloudinary = new Cloudinary(/*$cloudinaryConfig*/);
-        $newEvenement = $serializer->deserialize(
-            $request->getContent(),
-            Evenement::class,
-            'json');
-        
-        $imageFile = $request->files->get('image');
-
-        if ($imageFile && $imageFile->isValid()) {
-        // Envoyer l'image vers Cloudinary
-        $cloudinaryResponse = $cloudinary->uploadApi()->upload($imageFile->getPathname());
-        
-        // Récupérer l'URL sécurisée de l'image sur Cloudinary
-        $publicId = $cloudinaryResponse;
-        dd($publicId);
+        try {
+            $requestInfos = $request->request->all();
+            $imageFile = $request->files->get('image');
+            if ( !$imageFile ) {
+                throw  new Exception("Field 'image' of type 'File' missing in request.");
+            }
+            Configuration::instance('cloudinary://643476132488446:NlYPKcRrfx479KEfbD7Ecsqhnsk@dida5huld?secure=true');
+            // Envoyer l'image vers Cloudinary
+    
+            // Upload the image
+            $upload = new UploadApi();
+            $id = Uuid::v6();
+            $cloudinaryResponse = $upload->upload($imageFile->getPathname(), ['public_id' => $id]);
+            if ( $cloudinaryResponse instanceof ApiResponse) {
+                $eventImgUrl = 'https://res.cloudinary.com/dida5huld/image/upload/v1688393382/'.$id;
+            } else {
+                throw new Exception("Cloudinary response not type of ApiResponse");
+            }
+            $newEvenement = $serializer->deserialize(json_encode($requestInfos),Evenement::class,'json');
+            $newEvenement->setImage($eventImgUrl);
+            $errors = $validator->validate($newEvenement);
+            if ($errors->count() >0) {
+                return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
+            }
+            $entityManager->persist($newEvenement);
+            $entityManager->flush();
+            $context = SerializationContext::create()->setGroups(["getAllEvenements"]);
+    
+            $jsonEvenement = $serializer->serialize($newEvenement, 'json', $context );
+            return new JsonResponse($jsonEvenement, Response::HTTP_CREATED, [], true);
+    
+        } catch ( Exception $e ) {
+            return new JsonResponse($e->getMessage(), 500 , [] , true);
         }
-
-        $errors = $validator->validate($newEvenement);
-        if ($errors->count() >0) {
-            return new JsonResponse($serializer->serialize($errors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
-        }
-        $entityManager->persist($newEvenement);
-        $entityManager->flush();
-
-        $context = SerializationContext::create()->setGroups(["getAllEvenement"]);
-
-        $jsonEvenement = $serializer->serialize($newEvenement, 'json', $context /*['groups' => 'getEvenement']*/);
-        return new JsonResponse($jsonEvenement, Response::HTTP_CREATED, [], true);
     }
 
     // update
